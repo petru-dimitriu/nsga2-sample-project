@@ -86,6 +86,8 @@ namespace NSGA2_project
 
         private void loadDataset(int index)
         {
+            if (index < 0)
+                return;
             foreach (DatasetRow row in datasetList[index].data)
             {
                 ListViewItem lvi = new ListViewItem(row.daysAway.ToString());
@@ -102,14 +104,27 @@ namespace NSGA2_project
 
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
+            Color[] colors = new Color[] { Color.Blue, Color.Red, Color.Green };
             chartGraphics.Clear(Color.White);
-            foreach (DatasetRow row in datasetList[0].data)
+            int i = 0;
+            foreach (Dataset dataset in datasetList)
             {
-                int yPos = (int)((1 - row.percent) * (panel1.Height - 10));
-                int xPos = (int)(((row.daysAway + 0.0) / maxDaysAway) * (panel1.Width - 10));
-                MessageBox.Show(xPos + " " + yPos);
-                chartGraphics.DrawEllipse(new Pen(Color.Blue,5), new Rectangle(xPos - 3, yPos - 3, 5, 5));
+                foreach (DatasetRow row in dataset.data)
+                {
+                    int yPos = (int)((1 - row.percent) * (panel1.Height - 10));
+                    int xPos = (int)(((row.daysAway + 0.0) / maxDaysAway) * (panel1.Width - 10));
+                    chartGraphics.DrawEllipse(new Pen(colors[i%colors.Length], 5), new Rectangle(xPos - 3, yPos - 3, 5, 5));
+                }
+                i++;
             }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (listBox1.SelectedIndex < 0)
+                return;
+            datasetList.RemoveAt(listBox1.SelectedIndex);
+            listBox1.Items.RemoveAt(listBox1.SelectedIndex);
         }
     }
     }
