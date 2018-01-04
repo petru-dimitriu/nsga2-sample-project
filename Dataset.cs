@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NSGA2_project
 {
-    class DatasetRow
+    class Datapoint
     {
         public String productName { get; set; }
         public int daysAfter { get; set; }

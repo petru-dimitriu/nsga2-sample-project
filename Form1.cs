@@ -12,23 +12,16 @@ using System.Collections;
 
 namespace NSGA2_project
 {
-    class DatasetRowComparer : IComparer<DatasetRow>
-    {
-        public int Compare(DatasetRow x, DatasetRow y)
-        {
-            return x.daysAfter - y.daysAfter;
-        }
-    }
     public partial class Form1 : Form
     {
-        List<DatasetRow> dataset;
+        List<Datapoint> dataset;
         Graphics chartGraphics;
-        List<DatasetRow> paretoFrontierPointsList;
+        List<List<Datapoint>> paretoFrontierPointsList;
         long maxDaysAway;
 
         public Form1()
         {
-            dataset = new List<DatasetRow>();
+            dataset = new List<Datapoint>();
             InitializeComponent();
             chartGraphics = panel1.CreateGraphics();
         }
@@ -47,7 +40,7 @@ namespace NSGA2_project
                 DateTime initialDate = new DateTime(int.Parse(numbers[2]), int.Parse(numbers[1]), int.Parse(numbers[0]));
                 double initialPrice = double.Parse(numbers[3]);
 
-                DatasetRow datasetRow = new DatasetRow { productName = name, daysAfter = 0, percent = 1 };
+                Datapoint datasetRow = new Datapoint { productName = name, daysAfter = 0, percent = 1 };
                 dataset.Add(datasetRow);
                 listView1.Items.Add(new ListViewItem(new string[] { name, "0", "1" }));
 
@@ -59,7 +52,7 @@ namespace NSGA2_project
                     DateTime date = new DateTime(int.Parse(numbers[2]), int.Parse(numbers[1]), int.Parse(numbers[0]));
                     double currentPrice = double.Parse(numbers[3]);
 
-                    DatasetRow newRow = new DatasetRow { productName = name, daysAfter = (int)(date - initialDate).TotalDays, percent = currentPrice / initialPrice };
+                    Datapoint newRow = new Datapoint { productName = name, daysAfter = (int)(date - initialDate).TotalDays, percent = currentPrice / initialPrice };
                     dataset.Add(newRow);
 
                     if (newRow.daysAfter > maxDaysAway)
@@ -74,7 +67,7 @@ namespace NSGA2_project
         private void reloadListView()
         {
             listView1.Items.Clear();
-            foreach (DatasetRow row in dataset)
+            foreach (Datapoint row in dataset)
             {
                 listView1.Items.Add((new ListViewItem(new string[] { row.productName, row.daysAfter.ToString(), row.percent.ToString() })));
             }
@@ -99,25 +92,26 @@ namespace NSGA2_project
         {
             Color pointColor;
             chartGraphics.Clear(Color.White);
-            foreach (DatasetRow row in dataset)
-            {
-                int xPos = getXPosForPoint(row.daysAfter);
-                int yPos = getYPosForPoint(row.percent);
 
-                pointColor = Color.Blue;
-
-                chartGraphics.DrawRectangle(new Pen(pointColor,5), new Rectangle(xPos - 3, yPos - 3, 5, 5));
-            }
-            DatasetRow previous = null;
-            foreach (DatasetRow row in paretoFrontierPointsList)
+            Color[] colors = new Color[] { Color.Red, Color.Green, Color.Purple, Color.Orange, Color.Blue };
+            int color = 0;
+            foreach (List<Datapoint> currentFront in paretoFrontierPointsList)
             {
-                if (previous != null)
+                Datapoint previous = null;
+                foreach (Datapoint row in currentFront)
                 {
-                    chartGraphics.DrawLine(new Pen(Color.Red, 2),
-                        new Point { X = getXPosForPoint(previous.daysAfter), Y = getYPosForPoint(previous.percent) },
-                        new Point { X = getXPosForPoint(row.daysAfter), Y = getYPosForPoint(row.percent) });
+                    int xPos = getXPosForPoint(row.daysAfter);
+                    int yPos = getYPosForPoint(row.percent);
+                    chartGraphics.DrawRectangle(new Pen(colors[color%colors.Length], 5), new Rectangle(xPos - 3, yPos - 3, 5, 5));
+                    if (previous != null)
+                    {
+                        chartGraphics.DrawLine(new Pen(colors[color%colors.Length], 2),
+                            new Point { X = getXPosForPoint(previous.daysAfter), Y = getYPosForPoint(previous.percent) },
+                            new Point { X = getXPosForPoint(row.daysAfter), Y = getYPosForPoint(row.percent) });
+                    }
+                    previous = row;
                 }
-                previous = row;
+                color++;
             }
         }
 
@@ -134,19 +128,39 @@ namespace NSGA2_project
 
         private void computeParetoFrontier()
         {
+            
             // 1st step: sort points by X axis
             dataset.Sort(new DatasetRowComparer());
-            paretoFrontierPointsList = new List<DatasetRow>();
-            paretoFrontierPointsList.Add(dataset[0]);
-            DatasetRow previous = dataset[0];
-            foreach (DatasetRow row in dataset)
+            List<Datapoint> auxList = new List<Datapoint>();
+            auxList.AddRange(dataset);
+
+            paretoFrontierPointsList = new List<List<Datapoint>>();
+
+            while (auxList.Count != 0)
             {
-                if (previous.daysAfter <= row.daysAfter && previous.percent >= row.percent)
+                List<Datapoint> currentFrontierList = new List<Datapoint>();
+                currentFrontierList.Add(auxList[0]);
+                Datapoint previous = auxList[0];
+
+                foreach (Datapoint row in auxList)
                 {
-                    paretoFrontierPointsList.Add(row);
-                    previous = row;
+                    if (previous.daysAfter <= row.daysAfter && previous.percent >= row.percent)
+                    {
+                        currentFrontierList.Add(row);
+                        previous = row;
+                    }
                 }
+                auxList.RemoveAll(x => currentFrontierList.Contains(x));
+                paretoFrontierPointsList.Add(currentFrontierList);
             }
+        }
+    }
+
+    class DatasetRowComparer : IComparer<Datapoint>
+    {
+        public int Compare(Datapoint x, Datapoint y)
+        {
+            return x.daysAfter - y.daysAfter;
         }
     }
 }
