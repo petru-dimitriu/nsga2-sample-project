@@ -12,26 +12,25 @@ using System.Collections;
 
 namespace NSGA2_project
 {
+    class DatasetRowComparer : IComparer<DatasetRow>
+    {
+        public int Compare(DatasetRow x, DatasetRow y)
+        {
+            return x.daysAfter - y.daysAfter;
+        }
+    }
     public partial class Form1 : Form
     {
-        List<Dataset> datasetList;
+        List<DatasetRow> dataset;
         Graphics chartGraphics;
+        List<DatasetRow> paretoFrontierPointsList;
         long maxDaysAway;
-        
+
         public Form1()
         {
-            datasetList = new List<Dataset>();
+            dataset = new List<DatasetRow>();
             InitializeComponent();
             chartGraphics = panel1.CreateGraphics();
-        }
-
-        private void reloadListbox()
-        {
-            listBox1.Items.Clear();
-            foreach (Dataset d in datasetList)
-            {
-                listBox1.Items.Add(d.productName);
-            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -41,18 +40,16 @@ namespace NSGA2_project
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 StreamReader sr = new StreamReader(dialog.FileName);
-                Dataset dataset = new Dataset();
-                dataset.productName = sr.ReadLine(); // numele produsului
+                String name = sr.ReadLine(); // numele produsului
                 String firstRow = sr.ReadLine();
                 String[] numbers = firstRow.Split(' ');
 
                 DateTime initialDate = new DateTime(int.Parse(numbers[2]), int.Parse(numbers[1]), int.Parse(numbers[0]));
                 double initialPrice = double.Parse(numbers[3]);
 
-                DatasetRow datasetRow = new DatasetRow { daysAway = 0, percent = 1 };
-                datasetRow.daysAway = 0;
-                datasetRow.percent = 1;
-                dataset.data.Add(datasetRow);
+                DatasetRow datasetRow = new DatasetRow { productName = name, daysAfter = 0, percent = 1 };
+                dataset.Add(datasetRow);
+                listView1.Items.Add(new ListViewItem(new string[] { name, "0", "1" }));
 
                 while (!sr.EndOfStream)
                 {
@@ -62,69 +59,85 @@ namespace NSGA2_project
                     DateTime date = new DateTime(int.Parse(numbers[2]), int.Parse(numbers[1]), int.Parse(numbers[0]));
                     double currentPrice = double.Parse(numbers[3]);
 
-                    DatasetRow newRow = new DatasetRow();
-                    newRow.daysAway = (int)(date - initialDate).TotalDays;
-                    newRow.percent = currentPrice / initialPrice;
-                    dataset.data.Add(newRow);
+                    DatasetRow newRow = new DatasetRow { productName = name, daysAfter = (int)(date - initialDate).TotalDays, percent = currentPrice / initialPrice };
+                    dataset.Add(newRow);
 
-                    if (newRow.daysAway > maxDaysAway)
-                    {
-                        maxDaysAway = newRow.daysAway;
-                    }
+                    listView1.Items.Add(new ListViewItem(new string[] { name, newRow.daysAfter.ToString(), newRow.percent.ToString() }));
+
+                    if (newRow.daysAfter > maxDaysAway)
+                        maxDaysAway = newRow.daysAfter;
                 }
-                datasetList.Add(dataset);
-                reloadListbox();
-                drawChart();
+                updateChart();
             }
         }
 
-        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void updateChart()
         {
-            int index = listBox1.SelectedIndex;
-            loadDataset(index);
-        }
-
-        private void loadDataset(int index)
-        {
-            if (index < 0)
-                return;
-            foreach (DatasetRow row in datasetList[index].data)
-            {
-                ListViewItem lvi = new ListViewItem(row.daysAway.ToString());
-                lvi.SubItems.Add(row.percent.ToString());
-                listView1.Items.Add(lvi);
-            }
-            listView1.Refresh();
-        }
-
-        private void drawChart()
-        {
+            computeParetoFrontier();
             panel1.Invalidate();
+        }
+
+        private int getXPosForPoint (int daysAfter)
+        {
+            return (int)(((daysAfter + 0.0) / maxDaysAway) * (panel1.Width - 10));
+        }
+
+        private int getYPosForPoint (double percent)
+        {
+            return (int)((1 - percent) * (panel1.Height - 10));
         }
 
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
-            Color[] colors = new Color[] { Color.Blue, Color.Red, Color.Green };
+            Color pointColor;
             chartGraphics.Clear(Color.White);
-            int i = 0;
-            foreach (Dataset dataset in datasetList)
+            foreach (DatasetRow row in dataset)
             {
-                foreach (DatasetRow row in dataset.data)
+                int xPos = getXPosForPoint(row.daysAfter);
+                int yPos = getYPosForPoint(row.percent);
+
+                pointColor = Color.Blue;
+
+                chartGraphics.DrawEllipse(new Pen(pointColor,5), new Rectangle(xPos - 3, yPos - 3, 5, 5));
+            }
+            DatasetRow previous = null;
+            foreach (DatasetRow row in paretoFrontierPointsList)
+            {
+                if (previous != null)
                 {
-                    int yPos = (int)((1 - row.percent) * (panel1.Height - 10));
-                    int xPos = (int)(((row.daysAway + 0.0) / maxDaysAway) * (panel1.Width - 10));
-                    chartGraphics.DrawEllipse(new Pen(colors[i%colors.Length], 5), new Rectangle(xPos - 3, yPos - 3, 5, 5));
+                    chartGraphics.DrawLine(new Pen(Color.Red, 2),
+                        new Point { X = getXPosForPoint(previous.daysAfter), Y = getYPosForPoint(previous.percent) },
+                        new Point { X = getXPosForPoint(row.daysAfter), Y = getYPosForPoint(row.percent) });
                 }
-                i++;
+                previous = row;
             }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            if (listBox1.SelectedIndex < 0)
-                return;
-            datasetList.RemoveAt(listBox1.SelectedIndex);
-            listBox1.Items.RemoveAt(listBox1.SelectedIndex);
+            foreach (ListViewItem listviewItem in listView1.SelectedItems)
+            {
+                dataset.RemoveAt(listviewItem.Index);
+                listView1.Items.Remove(listviewItem);
+            }
+            updateChart();
+        }
+
+        private void computeParetoFrontier()
+        {
+            // 1st step: sort points by X axis
+            dataset.Sort(new DatasetRowComparer());
+            paretoFrontierPointsList = new List<DatasetRow>();
+            paretoFrontierPointsList.Add(dataset[0]);
+            DatasetRow previous = dataset[0];
+            foreach (DatasetRow row in dataset)
+            {
+                if (previous.daysAfter <= row.daysAfter && previous.percent >= row.percent)
+                {
+                    paretoFrontierPointsList.Add(row);
+                    previous = row;
+                }
+            }
         }
     }
-    }
+}
