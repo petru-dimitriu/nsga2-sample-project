@@ -62,18 +62,26 @@ namespace NSGA2_project
                     DatasetRow newRow = new DatasetRow { productName = name, daysAfter = (int)(date - initialDate).TotalDays, percent = currentPrice / initialPrice };
                     dataset.Add(newRow);
 
-                    listView1.Items.Add(new ListViewItem(new string[] { name, newRow.daysAfter.ToString(), newRow.percent.ToString() }));
-
                     if (newRow.daysAfter > maxDaysAway)
                         maxDaysAway = newRow.daysAfter;
                 }
                 updateChart();
+                computeParetoFrontier();
+                reloadListView();
+            }
+        }
+
+        private void reloadListView()
+        {
+            listView1.Items.Clear();
+            foreach (DatasetRow row in dataset)
+            {
+                listView1.Items.Add((new ListViewItem(new string[] { row.productName, row.daysAfter.ToString(), row.percent.ToString() })));
             }
         }
 
         private void updateChart()
         {
-            computeParetoFrontier();
             panel1.Invalidate();
         }
 
@@ -98,7 +106,7 @@ namespace NSGA2_project
 
                 pointColor = Color.Blue;
 
-                chartGraphics.DrawEllipse(new Pen(pointColor,5), new Rectangle(xPos - 3, yPos - 3, 5, 5));
+                chartGraphics.DrawRectangle(new Pen(pointColor,5), new Rectangle(xPos - 3, yPos - 3, 5, 5));
             }
             DatasetRow previous = null;
             foreach (DatasetRow row in paretoFrontierPointsList)
@@ -120,6 +128,7 @@ namespace NSGA2_project
                 dataset.RemoveAt(listviewItem.Index);
                 listView1.Items.Remove(listviewItem);
             }
+            computeParetoFrontier();
             updateChart();
         }
 
