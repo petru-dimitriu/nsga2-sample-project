@@ -7,10 +7,31 @@ using System.Threading.Tasks;
 namespace NSGA2_project
 {
     class Datapoint
-    {
-        public String productName { get; set; }
-        public int daysAfter { get; set; }
-        public double percent { get; set; }
+    {  
+
+        public double X { get; set ; }
+
+        public double Y { get; set; }
+
+        public double crowdingDistance { get; set; }
+
+        public double f1
+        {
+            get
+            {
+                return (X - 2 * Y * Math.Sin(Y));
+            }
+        }
+
+        public double f2
+        {
+            get
+            {
+                return Y;
+            }
+        }
+
+
     }
 
 }
