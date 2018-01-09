@@ -149,6 +149,7 @@ namespace NSGA2_project
                     dataset.Clear(); //depinde daca prin linia Population <- children din pseudocod se intelege populatie = populatie+children sau populatie = children
                     dataset.AddRange(children);
 
+                    children.Clear();
                     //crossover
                     for (int j = 0; j < selected.Count - 1; j++)
                         children.Add(crossOver(selected[j], selected[j + 1], crossoverRate));
@@ -311,7 +312,6 @@ namespace NSGA2_project
 
                 newChromosome.X = mother.X * alpha + father.X * (1 - randomNumber);
                 newChromosome.Y = mother.Y * alpha + father.Y * (1 - randomNumber);
-
 
                 return newChromosome;
             }

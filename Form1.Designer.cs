@@ -173,7 +173,7 @@
             this.tb_maxX.Name = "tb_maxX";
             this.tb_maxX.Size = new System.Drawing.Size(61, 20);
             this.tb_maxX.TabIndex = 11;
-            this.tb_maxX.Text = "50";
+            this.tb_maxX.Text = "15";
             // 
             // tb_minY
             // 
@@ -191,7 +191,7 @@
             this.tb_maxY.Name = "tb_maxY";
             this.tb_maxY.Size = new System.Drawing.Size(61, 20);
             this.tb_maxY.TabIndex = 13;
-            this.tb_maxY.Text = "50";
+            this.tb_maxY.Text = "15";
             // 
             // label5
             // 
