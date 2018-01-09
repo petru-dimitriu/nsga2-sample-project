@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NSGA2_project
 {
@@ -19,7 +15,7 @@ namespace NSGA2_project
         {
             get
             {
-                return (X - 2 * Y * Math.Sin(Y));
+                return (X);
             }
         }
 
@@ -27,7 +23,7 @@ namespace NSGA2_project
         {
             get
             {
-                return Y;
+                return (1+Y)/X;
             }
         }
 
