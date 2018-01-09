@@ -249,7 +249,7 @@
             this.tb_noOfIterations.Name = "tb_noOfIterations";
             this.tb_noOfIterations.Size = new System.Drawing.Size(67, 20);
             this.tb_noOfIterations.TabIndex = 19;
-            this.tb_noOfIterations.Text = "50";
+            this.tb_noOfIterations.Text = "1";
             // 
             // tb_crossoverRate
             // 
@@ -267,7 +267,7 @@
             this.tb_mutationRate.Name = "tb_mutationRate";
             this.tb_mutationRate.Size = new System.Drawing.Size(67, 20);
             this.tb_mutationRate.TabIndex = 21;
-            this.tb_mutationRate.Text = "0.2";
+            this.tb_mutationRate.Text = "0.05";
             // 
             // button3
             // 

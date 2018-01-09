@@ -126,7 +126,7 @@ namespace NSGA2_project
                         }
                         else
                         {
-                            parents.RemoveRange(parents.Count / 2, parents.Count / 2);
+                            //parents.RemoveRange(parents.Count / 2, parents.Count / 2);
                             parents.AddRange(front);
                         }
                     }
@@ -257,7 +257,9 @@ namespace NSGA2_project
             frontier[0].crowdingDistance = double.PositiveInfinity;
             for (int i = 1; i < frontier.Count -1; i++)
             {
-                frontier[i].crowdingDistance = frontier[i + 1].f2 - frontier[i - 1].f2 + frontier[i - 1].f1 - frontier[i - 1].f2;
+                frontier[i].crowdingDistance = 
+                    Math.Abs(frontier[i + 1].f2 - frontier[i - 1].f2) + 
+                    Math.Abs(frontier[i - 1].f1 - frontier[i - 1].f2);
             }
             frontier[frontier.Count - 1].crowdingDistance = double.PositiveInfinity;
         }
@@ -276,6 +278,7 @@ namespace NSGA2_project
                 List<Datapoint> currentFrontierList = new List<Datapoint>();
                 currentFrontierList.Add(auxList[0]);
                 Datapoint previous = auxList[0];
+                auxList.Remove(previous);
 
                 foreach (Datapoint row in auxList)
                 {
