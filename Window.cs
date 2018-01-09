@@ -6,11 +6,11 @@ using System.Windows.Forms;
 
 namespace NSGA2_project
 {
-    public partial class Form1 : Form
+    public partial class Window : Form
     {
         List<Datapoint> dataset;
         Graphics chartGraphics;
-        List<List<Datapoint>> paretoFrontierPointsList = new List<List<Datapoint>>();
+        List<List<Datapoint>> paretoFronts = new List<List<Datapoint>>();
         Random rand = new Random();
 
         int panelMaxX;
@@ -27,7 +27,7 @@ namespace NSGA2_project
         double mutationRate;
         int iterations;
 
-        public Form1()
+        public Window()
         {
             dataset = new List<Datapoint>();
             InitializeComponent();
@@ -43,7 +43,7 @@ namespace NSGA2_project
             drawXYAxis();
             Color[] colors = new Color[] { Color.Red, Color.Green, Color.Purple, Color.Orange, Color.Blue };
             int color = 0;
-            foreach (List<Datapoint> currentFront in paretoFrontierPointsList)
+            foreach (List<Datapoint> currentFront in paretoFronts)
             {
                 Datapoint previous = null;
                 foreach (Datapoint row in currentFront)
@@ -116,12 +116,12 @@ namespace NSGA2_project
                     computeParetoFrontierList(union); // calculeaza in currentParetoFrontierList; DE SCHIMBAT; de facut elegant
                     List<Datapoint> parents = new List<Datapoint>();
                     int frontL = 0;
-                    foreach (List<Datapoint> front in paretoFrontierPointsList)
+                    foreach (List<Datapoint> front in paretoFronts)
                     {
                         computeCrowdingDistance(front);
                         if (parents.Count + front.Count > populationSize)
                         {
-                            frontL = paretoFrontierPointsList.IndexOf(front);
+                            frontL = paretoFronts.IndexOf(front);
                             break;
                         }
                         else
@@ -132,9 +132,9 @@ namespace NSGA2_project
                     }
                     if (parents.Count < populationSize)
                     {
-                        paretoFrontierPointsList[frontL].Sort(new DistanceComparer());
+                        paretoFronts[frontL].Sort(new DistanceComparer());
                         // mai adauga datapoints pana cand se umple parents
-                        foreach (Datapoint datapoint in paretoFrontierPointsList[frontL])
+                        foreach (Datapoint datapoint in paretoFronts[frontL])
                         {
                             parents.Add(datapoint);
                             if (parents.Count == populationSize)
@@ -161,7 +161,6 @@ namespace NSGA2_project
                 }
                 // final
                 dataset.AddRange(children);
-                //dataset = dataset.Distinct().ToList(); // ?
                 computeParetoFrontierList(dataset);
                 panel1.Invalidate(); // declanseaza desenarea
                 updateListViewFromList(dataset.Distinct().OrderBy(x => x.f1).ToList());
@@ -215,32 +214,31 @@ namespace NSGA2_project
 
         private void drawXYAxis()
         {
-            int xOrigin = 0;
-            int yOrigin = panel1.Height - 1;
 
             int yHighest = panel1.Height;
             int xHighest = panel1.Width;
 
             chartGraphics.DrawLine(new Pen(Color.Black, 1),
-                           new Point { X = xOrigin, Y = yOrigin },
-                           new Point { X = xOrigin, Y = 1 });
+                           new Point { X = getXPosForPoint(0), Y = getYPosForPoint(0) },
+                           new Point { X = getXPosForPoint(0), Y = getYPosForPoint(YMaxDomain) });
 
 
             chartGraphics.DrawLine(new Pen(Color.Black, 1),
-                           new Point { X = xOrigin, Y = yOrigin },
-                           new Point { X = xHighest, Y = yOrigin });
+                           new Point { X = getXPosForPoint(0), Y = getYPosForPoint(0)-1 },
+                           new Point { X = getXPosForPoint(XMaxDomain), Y = getYPosForPoint(0)-1 });
         }
 
         // alege primele n/2 puncte in ordinea sortarii
         private List<Datapoint> selectParentsByRank()
         {
             List<Datapoint> selected = new List<Datapoint>();
-            foreach (List<Datapoint> front in paretoFrontierPointsList)
+            foreach (List<Datapoint> front in paretoFronts)
             {
                 if (selected.Count + front.Count <= populationSize / 2)
                     selected.AddRange(front);
-                else
+                else 
                 {
+                    // alegem ultimele puncte din ultimul front care mai are puncte continute in selectia noastra
                     foreach (Datapoint datapoint in front)
                     {
                         selected.Add(datapoint);
@@ -267,31 +265,36 @@ namespace NSGA2_project
 
         private void computeParetoFrontierList(List<Datapoint> datasetList)
         {
-            // 1st step: sort points by X axis
+            // sortarea dupa axa OX
             datasetList.Sort(new XAxisWiseComparer());
             List<Datapoint> auxList = new List<Datapoint>();
+
+            // crearea unei liste auxiliare
             auxList.AddRange(datasetList);
+            paretoFronts = new List<List<Datapoint>>();
 
-            paretoFrontierPointsList = new List<List<Datapoint>>();
-
+            // se vor elimina succesiv elemenente, pana cand se goleste lista
             while (auxList.Count != 0)
             {
-                List<Datapoint> currentFrontierList = new List<Datapoint>();
-                currentFrontierList.Add(auxList[0]);
+                // se adauga primul element din lista curenta intr-un nou front...
+                List<Datapoint> currentFront = new List<Datapoint>();
+                currentFront.Add(auxList[0]);
                 Datapoint previous = auxList[0];
+                // ... si se elimina imediat
                 auxList.Remove(previous);
 
+                // se parcurg celelalte elemente...
                 foreach (Datapoint row in auxList)
                 {
-                    if (previous.f1 <= row.f1 && previous.f2 >= row.f2)
+                    if (previous.f1 <= row.f1 && previous.f2 > row.f2)
                     {
-                        currentFrontierList.Add(row);
+                        currentFront.Add(row);
                         previous = row;
                     }
                 }
-                auxList.RemoveAll(x => currentFrontierList.Contains(x));
-                auxList.Sort(new XAxisWiseComparer());
-                paretoFrontierPointsList.Add(currentFrontierList);
+                //... si se elimina
+                auxList.RemoveAll(x => currentFront.Contains(x));
+                paretoFronts.Add(currentFront);
             }
         }
 
@@ -336,6 +339,14 @@ namespace NSGA2_project
         {
             initializeFields();
             panel1.Invalidate();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("We seek to minimise f1(x,y) = y and f2(x,y) = (6+Y) * X^-1.9.\n\n" +
+                "We imagine that these functions represent the time and the price of a certain product " +
+                "according to the time (x) and the factory price on the first day of the product (y). " +
+                "The evolution of the price in a certain store is given by f2.");
         }
     }
 

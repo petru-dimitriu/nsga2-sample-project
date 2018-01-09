@@ -23,7 +23,7 @@ namespace NSGA2_project
         {
             get
             {
-                return (1+Y)/X;
+                return (6+Y) * Math.Pow(X,-1.9);
             }
         }
 

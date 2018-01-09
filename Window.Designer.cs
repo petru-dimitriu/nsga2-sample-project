@@ -1,6 +1,6 @@
 ﻿namespace NSGA2_project
 {
-    partial class Form1
+    partial class Window
     {
         /// <summary>
         /// Required designer variable.
@@ -54,6 +54,7 @@
             this.tb_mutationRate = new System.Windows.Forms.TextBox();
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
+            this.button5 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // listView1
@@ -67,7 +68,7 @@
             this.listView1.Location = new System.Drawing.Point(12, 181);
             this.listView1.Name = "listView1";
             this.listView1.ShowGroups = false;
-            this.listView1.Size = new System.Drawing.Size(252, 402);
+            this.listView1.Size = new System.Drawing.Size(252, 287);
             this.listView1.TabIndex = 3;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -93,13 +94,13 @@
             // 
             this.panel1.Location = new System.Drawing.Point(282, 12);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(614, 402);
+            this.panel1.Size = new System.Drawing.Size(614, 540);
             this.panel1.TabIndex = 0;
             this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(12, 618);
+            this.button1.Location = new System.Drawing.Point(13, 503);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(251, 23);
             this.button1.TabIndex = 4;
@@ -109,11 +110,11 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(12, 589);
+            this.button2.Location = new System.Drawing.Point(13, 474);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(133, 23);
             this.button2.TabIndex = 5;
-            this.button2.Text = "Start";
+            this.button2.Text = "Run";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click_1);
             // 
@@ -173,7 +174,7 @@
             this.tb_maxX.Name = "tb_maxX";
             this.tb_maxX.Size = new System.Drawing.Size(61, 20);
             this.tb_maxX.TabIndex = 11;
-            this.tb_maxX.Text = "15";
+            this.tb_maxX.Text = "20";
             // 
             // tb_minY
             // 
@@ -191,7 +192,7 @@
             this.tb_maxY.Name = "tb_maxY";
             this.tb_maxY.Size = new System.Drawing.Size(61, 20);
             this.tb_maxY.TabIndex = 13;
-            this.tb_maxY.Text = "15";
+            this.tb_maxY.Text = "20";
             // 
             // label5
             // 
@@ -249,7 +250,7 @@
             this.tb_noOfIterations.Name = "tb_noOfIterations";
             this.tb_noOfIterations.Size = new System.Drawing.Size(67, 20);
             this.tb_noOfIterations.TabIndex = 19;
-            this.tb_noOfIterations.Text = "1";
+            this.tb_noOfIterations.Text = "50";
             // 
             // tb_crossoverRate
             // 
@@ -267,11 +268,11 @@
             this.tb_mutationRate.Name = "tb_mutationRate";
             this.tb_mutationRate.Size = new System.Drawing.Size(67, 20);
             this.tb_mutationRate.TabIndex = 21;
-            this.tb_mutationRate.Text = "0.05";
+            this.tb_mutationRate.Text = "0.01";
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(144, 589);
+            this.button3.Location = new System.Drawing.Point(145, 474);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(119, 23);
             this.button3.TabIndex = 22;
@@ -289,11 +290,22 @@
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(13, 529);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(249, 23);
+            this.button5.TabIndex = 24;
+            this.button5.Text = "Story behind";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(908, 667);
+            this.ClientSize = new System.Drawing.Size(908, 570);
+            this.Controls.Add(this.button5);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.tb_mutationRate);
@@ -317,7 +329,7 @@
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.panel1);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "NSGA 2 demo - Dumitru-Daniel Vecliuc and Petru Dimitriu";
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -350,6 +362,7 @@
         private System.Windows.Forms.TextBox tb_mutationRate;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button button5;
     }
 }
 
